@@ -1,9 +1,7 @@
-from time import timezone
-
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 from django.contrib.auth.models import AbstractUser, UserManager
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 STATE_CHOICES = (
     ('basket', 'Статус корзины'),
@@ -51,92 +49,113 @@ class User(AbstractUser):
     )
     type = models.CharField(verbose_name='Тип пользователя', choices=USER_TYPE_CHOICES, max_length=5,
                             default='buyer')
-
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
-
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = "Список пользователей"
         ordering = ('email',)
 
-
 class Shop(models.Model):
     name = models.CharField(max_length=256, verbose_name='Название магазина')
     url = models.URLField(verbose_name='Ссылка', null=True, blank=True)
+    user = models.OneToOneField(User, verbose_name='Пользователь', blank=True, null=True, on_delete=models.CASCADE)
     filename = models.FileField(verbose_name='yaml file', blank=True)
     class Meta:
         verbose_name = 'Магазин'
         verbose_name_plural = 'Магазины'
+        ordering = ('-name',)
     def __str__(self):
         return self.name
 
 class Category(models.Model):
     name = models.CharField(max_length=128, verbose_name='Категория')
     shops = models.ManyToManyField(Shop, verbose_name='Магазин')
-
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
+        ordering = ('-name',)
     def __str__(self):
         return self.name
 
 class Product(models.Model):
     name = models.CharField(max_length=128, verbose_name='Название магазина')
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="product")
+    category = models.ForeignKey(Category, verbose_name='Категория', on_delete=models.CASCADE, related_name="product")
+    class Meta:
+        verbose_name = 'Продукт'
+        verbose_name_plural = 'Продукты'
+        ordering = ('-name',)
     def __str__(self):
         return self.name
 
 class ProductInfo(models.Model):
     product = models.ForeignKey(Product, verbose_name='продукт', on_delete=models.CASCADE)
     shop = models.ForeignKey(Shop, verbose_name='магазин', on_delete=models.CASCADE)
-    name= models.ForeignKey(Product.name, verbose_name='название магазина', on_delete=models.CASCADE)
+    name= models.ForeignKey(Product, verbose_name='название магазина', on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(verbose_name='количество')
     price = models.DecimalField(max_digits=6, decimal_places=2, verbose_name='цена')
     price_rrc = models.DecimalField(max_digits=6, decimal_places=2, verbose_name='рекомендованная цена')
+    class Meta:
+        verbose_name = 'Информация о продукте'
+        verbose_name_plural = "Список информации о продуктах"
+        constraints = [
+            models.UniqueConstraint(fields=['product', 'shop'], name='unique_product_info'),
+        ]
     def __str__(self):
         return f'{[self.name, self.quantity, self.price]}'
 
 class Parameter(models.Model):
     name = models.CharField(max_length=128, verbose_name='параметр')
+    class Meta:
+        verbose_name = 'Параметр'
+        verbose_name_plural = 'Параметры'
+        ordering = ('-name',)
     def __str__(self):
         return self.name
 
 class ProductParameter(models.Model):
-    product_info = models.ForeignKey(ProductInfo, verbose_name='Описание продукта')
-    parameter = models.ForeignKey(Parameter.name, verbose_name='Параметр', on_delete=models.CASCADE)
+    product_info = models.ForeignKey(ProductInfo, verbose_name='Описание продукта', blank=True, related_name='product_parameters', on_delete=models.CASCADE)
+    parameter = models.ForeignKey(Parameter, verbose_name='Параметр', on_delete=models.CASCADE, related_name='product_parameters', blank=True)
     value = models.CharField(max_length=128, verbose_name='характеристика')
+    class Meta:
+        verbose_name = 'Параметр продукта'
+        verbose_name_plural = "Список параметров продукта"
+        constraints = [
+            models.UniqueConstraint(fields=['product_info', 'parameter'], name='unique_product_parameter'),
+        ]
     def __str__(self):
         return f'{[self.parameter, self.value]}'
 
 class Order(models.Model):
     user = models.OneToOneField(User, verbose_name='Пользователь', on_delete=models.CASCADE)
-    dt = models.DateTimeField(verbose_name='Время создания', default=timezone.now)
-    status = models.CharField(verbose_name='Статус заказа', choices=STATE_CHOICES, max_length=10,
+    dt = models.DateTimeField(verbose_name='Время создания', auto_now_add=True)
+    status = models.CharField(verbose_name='Статус заказа', choices=STATE_CHOICES, max_length=15,
                             default='new')
     class Meta:
         verbose_name = 'Заказ'
         verbose_name_plural = 'Заказы'
+        ordering = ('-dt',)
     def __str__(self):
         return f'{[self.user, self.dt, self.status]}'
 
 class OrderItem(models.Model):
-    order = models.OneToOneField(Order, verbose_name='Заказ', on_delete=models.CASCADE)
+    order = models.OneToOneField(Order, verbose_name='Заказ', on_delete=models.CASCADE, blank=True)
     product = models.ForeignKey(Product, verbose_name='Продукт', on_delete=models.CASCADE,blank=True)
     shop = models.ForeignKey(Shop, verbose_name='Магазин', on_delete=models.CASCADE,blank=True)
     quantity = models.PositiveIntegerField(verbose_name='количество')
-
     class Meta:
         verbose_name = 'Детали заказа'
         verbose_name_plural = "Детали заказов"
-
+        constraints = [
+            models.UniqueConstraint(fields=['order_id', 'product_info'], name='unique_order_item'),
+        ]
     def __str__(self):
         return f'{[self.product, self.shop, self.quantity]}'
 
 class Contact(models.Model):
     type = models.CharField(verbose_name='Тип пользователя', choices=USER_TYPE_CHOICES, max_length=5,
                             default='buyer')
-    user = models.OneToOneField(User, verbose_name='Пользователь', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, verbose_name='Пользователь', on_delete=models.CASCADE, blank=True, related_name='contats')
     value = models.CharField(max_length=128, verbose_name='Подробности')
     class Meta:
         verbose_name = 'Контакты пользователя'

@@ -37,9 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'shop_inter',
+    # 'shop_inter',
     'rest_framework',
-    # 'backend.apps.BackendConfig',
+    'shop_inter.apps.ShopInterConfig',
     'rest_framework.authtoken',
     'django_rest_passwordreset',
 ]
@@ -151,3 +151,5 @@ REST_FRAMEWORK = {
     ),
 
 }
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
