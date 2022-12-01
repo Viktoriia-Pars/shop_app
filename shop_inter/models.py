@@ -89,9 +89,9 @@ class Product(models.Model):
         return self.name
 
 class ProductInfo(models.Model):
-    product = models.ForeignKey(Product, verbose_name='продукт', on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, verbose_name='продукт', related_name='product_info', on_delete=models.CASCADE)
     shop = models.ForeignKey(Shop, verbose_name='магазин', on_delete=models.CASCADE)
-    name= models.ForeignKey(Product, verbose_name='название магазина', on_delete=models.CASCADE)
+    name= models.ForeignKey(Product, verbose_name='название магазина', related_name='product_name', on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(verbose_name='количество')
     price = models.DecimalField(max_digits=6, decimal_places=2, verbose_name='цена')
     price_rrc = models.DecimalField(max_digits=6, decimal_places=2, verbose_name='рекомендованная цена')
@@ -99,7 +99,7 @@ class ProductInfo(models.Model):
         verbose_name = 'Информация о продукте'
         verbose_name_plural = "Список информации о продуктах"
         constraints = [
-            models.UniqueConstraint(fields=['product', 'shop'], name='unique_product_info'),
+            models.UniqueConstraint(fields=['product', 'shop'], name='unique_product'),
         ]
     def __str__(self):
         return f'{[self.name, self.quantity, self.price]}'
@@ -114,14 +114,14 @@ class Parameter(models.Model):
         return self.name
 
 class ProductParameter(models.Model):
-    product_info = models.ForeignKey(ProductInfo, verbose_name='Описание продукта', blank=True, related_name='product_parameters', on_delete=models.CASCADE)
+    product = models.ForeignKey(ProductInfo, verbose_name='Описание продукта', blank=True, related_name='product_parameters', on_delete=models.CASCADE)
     parameter = models.ForeignKey(Parameter, verbose_name='Параметр', on_delete=models.CASCADE, related_name='product_parameters', blank=True)
     value = models.CharField(max_length=128, verbose_name='характеристика')
     class Meta:
         verbose_name = 'Параметр продукта'
         verbose_name_plural = "Список параметров продукта"
         constraints = [
-            models.UniqueConstraint(fields=['product_info', 'parameter'], name='unique_product_parameter'),
+            models.UniqueConstraint(fields=['product', 'parameter'], name='unique_parameter'),
         ]
     def __str__(self):
         return f'{[self.parameter, self.value]}'
@@ -147,7 +147,7 @@ class OrderItem(models.Model):
         verbose_name = 'Детали заказа'
         verbose_name_plural = "Детали заказов"
         constraints = [
-            models.UniqueConstraint(fields=['order_id', 'product_info'], name='unique_order_item'),
+            models.UniqueConstraint(fields=['order_id', 'product'], name='unique_order_item'),
         ]
     def __str__(self):
         return f'{[self.product, self.shop, self.quantity]}'

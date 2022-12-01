@@ -84,7 +84,7 @@ DATABASES = {
         'USER': 'postgres',
         'PASSWORD': '111111',
         'HOST': '127.0.0.1',
-        'PORT': 5432,
+        'PORT': 1486,
     }}
 
 # DATABASES = {
@@ -153,3 +153,4 @@ REST_FRAMEWORK = {
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+AUTH_USER_MODEL='shop_inter.User'
