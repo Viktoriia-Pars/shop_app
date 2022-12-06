@@ -1,3 +1,4 @@
+import yaml
 from django.core.validators import URLValidator
 from django.http import JsonResponse
 from django.core.exceptions import ValidationError
@@ -27,7 +28,6 @@ class PartnerUpdate(APIView):
                 return JsonResponse({'Status': False, 'Error': str(e)})
             else:
                 stream = get(url).content
-
                 data = load_yaml(stream, Loader=Loader)
 
                 shop, _ = Shop.objects.get_or_create(name=data['shop'], user_id=request.user.id)
@@ -37,10 +37,10 @@ class PartnerUpdate(APIView):
                     category_object.save()
                 ProductInfo.objects.filter(shop_id=shop.id).delete()
                 for item in data['goods']:
-                    product, _ = Product.objects.get_or_create(name=item['name'], category_id=item['category'])
+                    product, _ = Product.objects.get_or_create(name=item['name'], category_id=item['category'], model=item['model'])
 
                     product_info = ProductInfo.objects.create(product_id=product.id,
-                                                              # external_id=item['id'],
+                                                              external_id=item['id'],
                                                               model=item['model'],
                                                               price=item['price'],
                                                               price_rrc=item['price_rrc'],
@@ -54,5 +54,5 @@ class PartnerUpdate(APIView):
 
                 return JsonResponse({'Status': True})
 
-        return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
+        return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы', 'url': url})
 # Create your views here.

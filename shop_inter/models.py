@@ -1,6 +1,7 @@
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
-from django.contrib.auth.models import AbstractUser, UserManager
+from django.contrib.auth.models import AbstractUser
+from .manager import UserManager
 from django.utils.translation import gettext_lazy as _
 
 STATE_CHOICES = (
@@ -59,8 +60,9 @@ class User(AbstractUser):
 class Shop(models.Model):
     name = models.CharField(max_length=256, verbose_name='Название магазина')
     url = models.URLField(verbose_name='Ссылка', null=True, blank=True)
-    user = models.OneToOneField(User, verbose_name='Пользователь', blank=True, null=True, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, verbose_name='Пользователь', blank=True, null=True, on_delete=models.CASCADE)
     filename = models.FileField(verbose_name='yaml file', blank=True)
+    objects = models.Manager()
     class Meta:
         verbose_name = 'Магазин'
         verbose_name_plural = 'Магазины'
@@ -79,7 +81,8 @@ class Category(models.Model):
         return self.name
 
 class Product(models.Model):
-    name = models.CharField(max_length=128, verbose_name='Название магазина')
+    name = models.CharField(max_length=128, verbose_name='Название продукта')
+    model = models.CharField(max_length=128, verbose_name='Модель', blank=True, null=True)
     category = models.ForeignKey(Category, verbose_name='Категория', on_delete=models.CASCADE, related_name="product")
     class Meta:
         verbose_name = 'Продукт'
@@ -90,11 +93,13 @@ class Product(models.Model):
 
 class ProductInfo(models.Model):
     product = models.ForeignKey(Product, verbose_name='продукт', related_name='product_info', on_delete=models.CASCADE)
+    external_id = models.PositiveIntegerField(verbose_name='Внешний ИД', blank=True,)
     shop = models.ForeignKey(Shop, verbose_name='магазин', on_delete=models.CASCADE)
-    name= models.ForeignKey(Product, verbose_name='название магазина', related_name='product_name', on_delete=models.CASCADE)
+    name= models.ForeignKey(Product, verbose_name='название продукта', related_name='product_name', blank=True, null= True, on_delete=models.CASCADE)
+    model= models.CharField(max_length=128, verbose_name='Модель продукта', blank=True, null=True)
     quantity = models.PositiveIntegerField(verbose_name='количество')
-    price = models.DecimalField(max_digits=6, decimal_places=2, verbose_name='цена')
-    price_rrc = models.DecimalField(max_digits=6, decimal_places=2, verbose_name='рекомендованная цена')
+    price = models.DecimalField(max_digits=20, decimal_places=2, verbose_name='цена')
+    price_rrc = models.DecimalField(max_digits=20, decimal_places=2, verbose_name='рекомендованная цена')
     class Meta:
         verbose_name = 'Информация о продукте'
         verbose_name_plural = "Список информации о продуктах"
@@ -102,10 +107,11 @@ class ProductInfo(models.Model):
             models.UniqueConstraint(fields=['product', 'shop'], name='unique_product'),
         ]
     def __str__(self):
-        return f'{[self.name, self.quantity, self.price]}'
+        return f'{[self.model, self.quantity, self.price]}'
 
 class Parameter(models.Model):
     name = models.CharField(max_length=128, verbose_name='параметр')
+    objects = models.Manager()
     class Meta:
         verbose_name = 'Параметр'
         verbose_name_plural = 'Параметры'
