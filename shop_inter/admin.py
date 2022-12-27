@@ -34,7 +34,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('id', 'name', 'model', 'category')
 
 
 @admin.register(ProductInfo)
@@ -52,14 +52,19 @@ class ProductParameterAdmin(admin.ModelAdmin):
     pass
 
 
-@admin.register(Order)
-class OrderAdmin(admin.ModelAdmin):
-    pass
+class OrderItemInline(admin.TabularInline):
+    model = OrderItem
+    fields = ('id', 'order', 'product', 'shop', 'quantity')
 
 
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('id', 'order', 'product', 'shop', 'quantity')
+
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    inlines = (OrderItemInline, )
 
 
 @admin.register(Contact)
