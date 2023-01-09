@@ -134,20 +134,8 @@ class ProductParameter(models.Model):
     def __str__(self):
         return f'{[self.parameter, self.value]}'
 
-class Order(models.Model):
-    user = models.OneToOneField(User, verbose_name='Пользователь', on_delete=models.CASCADE)
-    dt = models.DateTimeField(verbose_name='Время создания', auto_now_add=True)
-    status = models.CharField(verbose_name='Статус заказа', choices=STATE_CHOICES, max_length=15,
-                            default='new')
-    class Meta:
-        verbose_name = 'Заказ'
-        verbose_name_plural = 'Заказы'
-        ordering = ('-dt',)
-    def __str__(self):
-        return f'{[self.user, self.dt, self.status]}'
-
 class OrderItem(models.Model):
-    order = models.OneToOneField(Order, verbose_name='Заказ', on_delete=models.CASCADE, blank=True)
+    # order = models.ForeignKey(Order, verbose_name='Заказ', on_delete=models.CASCADE, blank=True)
     product = models.ForeignKey(Product, verbose_name='Продукт', on_delete=models.CASCADE,blank=True)
     shop = models.ForeignKey(Shop, verbose_name='Магазин', on_delete=models.CASCADE,blank=True)
     quantity = models.PositiveIntegerField(verbose_name='количество')
@@ -155,10 +143,31 @@ class OrderItem(models.Model):
         verbose_name = 'Детали заказа'
         verbose_name_plural = "Детали заказов"
         constraints = [
-            models.UniqueConstraint(fields=['order_id', 'product'], name='unique_order_item'),
-        ]
+            models.UniqueConstraint(fields=['product'], name='unique_order_item'),]
+        # unique_together = (('product', 'quantity'),)
     def __str__(self):
         return f'{[self.product, self.shop, self.quantity]}'
+
+
+class Order(models.Model):
+    user = models.OneToOneField(User, verbose_name='Пользователь', on_delete=models.CASCADE)
+    dt = models.DateTimeField(verbose_name='Время создания', auto_now_add=True)
+    status = models.CharField(verbose_name='Статус заказа', choices=STATE_CHOICES, max_length=15,
+                            default='new')
+    orderitems = models.ManyToManyField(OrderItem, verbose_name='позиции заказа', related_name='order_item', through='Order_to_Orderitem')
+    class Meta:
+        verbose_name = 'Заказ'
+        verbose_name_plural = 'Заказы'
+        ordering = ('-dt',)
+        # unique_together = (('id', 'orderitems'),)
+    def __str__(self):
+        return f"{self.id, self.user, self.dt, self.status} ({','.join(str(orderit.product) for orderit in self.orderitems.all())})"
+
+
+class Order_to_Orderitem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    orderitem = models.ForeignKey(OrderItem, on_delete=models.CASCADE)
+
 
 class Contact(models.Model):
     type = models.CharField(verbose_name='Тип пользователя', choices=USER_TYPE_CHOICES, max_length=5,

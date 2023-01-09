@@ -54,18 +54,18 @@ class ProductParameterAdmin(admin.ModelAdmin):
 
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
-    fields = ('id', 'order', 'product', 'shop', 'quantity')
-
+    fields = ('id', 'product', 'shop', 'quantity')
+    list_display_links = ['id']
 
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
-    list_display = ('id', 'order', 'product', 'shop', 'quantity')
+    list_display = ('id', 'product', 'shop', 'quantity')
 
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    inlines = (OrderItemInline, )
-
+    # inlines = (OrderItemInline, )
+    pass
 
 @admin.register(Contact)
 class ContactAdmin(admin.ModelAdmin):
