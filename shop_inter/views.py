@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from json import loads as load_json
 from json import dumps
 from django.core.validators import URLValidator
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.core.exceptions import ValidationError
 from rest_framework.views import APIView
 from yaml import load as load_yaml, Loader
@@ -313,24 +313,43 @@ class BasketView(APIView):
         if not request.user.is_authenticated:
             return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
         items_sting = request.data.get('items')
-        if items_sting:
+        basket, _ = Order.objects.get_or_create(user_id=request.user.id, status='basket')
+        print(basket.orderitems.prefetch_related().filter(product=1))
+        # if items_sting:
+        #     try:
+        #         items_per = dumps(items_sting)
+        #         items_dict = load_json(items_per)
+        #     except ValueError:
+        #         JsonResponse({'Status': False, 'Errors': 'Неверный формат запроса'})
+        if type(items_sting)==dict:
             try:
-                items_per = dumps(items_sting)
-                items_dict = load_json(items_per)
-            except ValueError:
-                JsonResponse({'Status': False, 'Errors': 'Неверный формат запроса'})
-            else:
-                basket, _ = Order.objects.get_or_create(user_id=request.user.id, status='basket')
-                query = Q()
-                objects_deleted = False
-                if items_dict['product']:
-                    query = query | Q(order_id=basket.id, product=items_dict['product'])
-                    objects_deleted = True
+                serializer = OrderItemSerializer(data=items_sting)
+                if serializer.is_valid():
+                    try:
+                        basket, _ = Order.objects.get_or_create(user_id=request.user.id, status='basket')
+                        if basket.orderitems.prefetch_related().filter(product=items_sting['product']):
+                            deleted_count = basket.orderitems.prefetch_related().filter(product=items_sting['product']).delete()[0]
+                            # basket.orderitems.prefetch_related().filter(product=items_sting['product']).delete()[0]
+                            return JsonResponse({'Status': True, 'Удалено предметов': deleted_count})
+                        else:
+                            return JsonResponse({'Status': False, 'Errors': 'Такого продукта нет'})
+                    except Exception as e:
+                        return HttpResponse("Exception: 1")
+                else:
+                    return JsonResponse({'Status': False, 'Errors': serializer.errors})
+            except :
+                return HttpResponse("Exception: 2")
+            return JsonResponse({'Status': False, 'Errors': 'Неверный формат запроса'})
 
-                if objects_deleted:
-                    deleted_count = OrderItem.objects.filter(query).delete()[0]
-                    return JsonResponse({'Status': True, 'Удалено объектов': deleted_count})
-        return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
+
+                        # if items_dict['product']:
+                        #     query = query | Q(order_id=basket.id, product=items_dict['product'])
+
+        #
+        #         if objects_deleted:
+        #             deleted_count = OrderItem.objects.filter(query).delete()[0]
+        #             return JsonResponse({'Status': True, 'Удалено объектов': deleted_count})
+        # return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
 
     # изменить количество для позиции в корзине
     def put(self, request, *args, **kwargs):
