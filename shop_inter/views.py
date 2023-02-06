@@ -281,30 +281,8 @@ class BasketView(APIView):
                      else:
                         return JsonResponse({'Status': False, 'Errors': serializer.errors})
                  return JsonResponse({'Status': True, 'Создано объектов': objects_created})
-
-                # items_per = dumps(items_sting)
-                # items_list = items_per.split(',')
-                # items_dict = load_json(items_per)
              except ValueError:
                  return JsonResponse({'Status': False, 'Errors': 'Неверный формат запроса'})
-        # else:
-        #     basket, _ = Order.objects.update_or_create(user_id=request.user.id, status='basket')
-        #     objects_created = 0
-            # items_dict.update({'order': basket.id})
-            # for items in items_list:
-            # serializer = OrderItemSerializer(data=items_list)
-            # if serializer.is_valid():
-            #     try:
-            #         serializer.save()
-            #     except IntegrityError as error:
-            #         return JsonResponse({'Status': False, 'Errors': str(error)})
-            #     # else:
-            #     objects_created += 1
-            #     return JsonResponse({'Status': True, 'Создано объектов': objects_created})
-
-            # else:
-            #     JsonResponse({'Status': False, 'Errors': serializer.errors})
-        #
         else:
             return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
 
@@ -315,12 +293,6 @@ class BasketView(APIView):
         items_sting = request.data.get('items')
         basket, _ = Order.objects.get_or_create(user_id=request.user.id, status='basket')
         print(basket.orderitems.prefetch_related().filter(product=1))
-        # if items_sting:
-        #     try:
-        #         items_per = dumps(items_sting)
-        #         items_dict = load_json(items_per)
-        #     except ValueError:
-        #         JsonResponse({'Status': False, 'Errors': 'Неверный формат запроса'})
         if type(items_sting)==dict:
             try:
                 serializer = OrderItemSerializer(data=items_sting)
@@ -340,16 +312,6 @@ class BasketView(APIView):
             except :
                 return HttpResponse("Exception: 2")
             return JsonResponse({'Status': False, 'Errors': 'Неверный формат запроса'})
-
-
-                        # if items_dict['product']:
-                        #     query = query | Q(order_id=basket.id, product=items_dict['product'])
-
-        #
-        #         if objects_deleted:
-        #             deleted_count = OrderItem.objects.filter(query).delete()[0]
-        #             return JsonResponse({'Status': True, 'Удалено объектов': deleted_count})
-        # return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
 
     # изменить количество для позиции в корзине
     def put(self, request, *args, **kwargs):
@@ -443,7 +405,7 @@ class ContactView(APIView):
             return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
 
         if {'city', 'street', 'phone'}.issubset(request.data):
-            request.data._mutable = True
+            # request.data._mutable = True
             request.data.update({'user': request.user.id})
             serializer = ContactSerializer(data=request.data)
 
