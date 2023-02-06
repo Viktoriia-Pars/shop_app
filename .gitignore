@@ -9,7 +9,7 @@ __pycache__/
 myvenv/
 venv/
 reference/
-
+.env
 ### Project specific ###
 settings_local.py
 

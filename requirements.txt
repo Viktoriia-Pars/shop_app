@@ -6,3 +6,4 @@ django-filter
 django-rest-passwordreset
 pyYaml
 requests
+django-environ
