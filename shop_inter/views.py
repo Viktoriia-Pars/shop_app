@@ -415,9 +415,9 @@ class PartnerOrders(APIView):
 
         order = Order.objects.filter(
             ordered_items__product_info__shop__user_id=request.user.id).exclude(status='basket').prefetch_related(
-            'ordered_items__product_info__product__category',
-            'ordered_items__product_info__product_parameters__parameter').select_related('contact').annotate(
-            total_sum=Sum(F('ordered_items__quantity') * F('ordered_items__product_info__price'))).distinct()
+            'orderitems__product__category',
+            'orderitems__product__product_info__product_parameters__parameter').select_related('contact').annotate(
+            total_sum=Sum(F('orderitems__quantity') * F('orderitems__product__product_info__price'), output_field=DecimalField())).distinct()
 
         serializer = OrderSerializer(order, many=True)
         return Response(serializer.data)
@@ -506,9 +506,9 @@ class OrderView(APIView):
             return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
         order = Order.objects.filter(
             user_id=request.user.id).exclude(status='basket').prefetch_related(
-            'ordered_items__product_info__product__category',
-            'ordered_items__product_info__product_parameters__parameter').select_related('contact').annotate(
-            total_sum=Sum(F('ordered_items__quantity') * F('ordered_items__product_info__price'))).distinct()
+            'orderitems__product__category',
+            'orderitems__product__product_info__product_parameters__parameter').select_related('contact').annotate(
+            total_sum=Sum(F('orderitems__quantity') * F('orderitems__product__product_info__price'),output_field=DecimalField())).distinct()
 
         serializer = OrderSerializer(order, many=True)
         return Response(serializer.data)
