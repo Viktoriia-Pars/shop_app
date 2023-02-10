@@ -13,6 +13,9 @@ new_order = Signal(
     providing_args=['user_id'],
 )
 
+shop_notification = Signal(
+    providing_args=['id']
+)
 
 @receiver(reset_password_token_created)
 def password_reset_token_created(sender, instance, reset_password_token, **kwargs):
@@ -80,3 +83,24 @@ def new_order_signal(user_id, **kwargs):
         [user.email]
     )
     msg.send()
+
+@receiver(shop_notification)
+def new_order_for_shop(user_id, id, **kwargs):
+    """
+    отправяем письмо при изменении статуса заказа
+    """
+    # send an e-mail to the owner shop
+    user = User.objects.get(id=user_id)
+
+    msg = EmailMultiAlternatives(
+        # title:
+        f"Обновление статуса заказа за номером {id}",
+        # message:
+        'в вашем магазине размещен заказ',
+        # from:
+        settings.EMAIL_HOST_USER,
+        # to:
+        [user.email]
+    )
+    msg.send()
+

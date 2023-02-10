@@ -19,7 +19,7 @@ from shop_inter.models import Shop, Category, ProductInfo, Product, ProductParam
     OrderItem, Contact, ConfirmEmailToken
 from shop_inter.serializers import UserSerializer, CategorySerializer, ShopSerializer, ProductInfoSerializer, \
     OrderItemSerializer, OrderSerializer, ContactSerializer
-from shop_inter.signals import new_user_registered, new_order
+from shop_inter.signals import new_user_registered, new_order, shop_notification
 
 
 class PartnerUpdate(APIView):
@@ -342,7 +342,7 @@ class PartnerState(APIView):
         if request.user.type != 'shop':
             return JsonResponse({'Status': False, 'Error': 'Только для магазинов'}, status=403)
 
-        shop = request.user.shop
+        shop = Shop.objects.get(user=request.user)
         serializer = ShopSerializer(shop)
         return Response(serializer.data)
 
@@ -376,7 +376,7 @@ class PartnerOrders(APIView):
             return JsonResponse({'Status': False, 'Error': 'Только для магазинов'}, status=403)
 
         order = Order.objects.filter(
-            ordered_items__product_info__shop__user_id=request.user.id).exclude(status='basket').prefetch_related(
+            orderitems__shop__user_id=request.user.id).exclude(status='basket').prefetch_related(
             'orderitems__product__category',
             'orderitems__product__product_info__product_parameters__parameter').select_related('contact').annotate(
             total_sum=Sum(F('orderitems__quantity') * F('orderitems__product__product_info__price'), output_field=DecimalField())).distinct()
@@ -493,6 +493,12 @@ class OrderView(APIView):
                 else:
                     if is_updated:
                         new_order.send(sender=self.__class__, user_id=request.user.id)
+                        thisorder = Order.objects.get(user_id=request.user.id, id=request.data['id'])
+                        thisitems = thisorder.orderitems.all()
+                        user_list = [item.shop.user for item in thisitems]
+                        id_list = set([user.id for user in user_list])
+                        for id in id_list:
+                            shop_notification.send(sender=self.__class__, user_id=id, id=request.data['id'])
                         return JsonResponse({'Status': True})
 
         return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
