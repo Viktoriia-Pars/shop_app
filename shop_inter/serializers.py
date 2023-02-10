@@ -32,8 +32,7 @@ class CategorySerializer(serializers.ModelSerializer):
 class ShopSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shop
-        # fields = ('id', 'name', 'state',)
-        fields = ('id', 'name',)
+        fields = ('id', 'name', 'state',)
         read_only_fields = ('id',)
 
 
