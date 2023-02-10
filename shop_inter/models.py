@@ -65,6 +65,7 @@ class Shop(models.Model):
     user = models.ForeignKey(User, verbose_name='Пользователь', blank=True, null=True, on_delete=models.CASCADE)
     filename = models.FileField(verbose_name='yaml file', blank=True)
     objects = models.Manager()
+    state = models.BooleanField(verbose_name='статус получения заказов', default=True)
     class Meta:
         verbose_name = 'Магазин'
         verbose_name_plural = 'Магазины'
