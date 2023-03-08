@@ -20,6 +20,7 @@ from shop_inter.models import Shop, Category, ProductInfo, Product, ProductParam
 from shop_inter.serializers import UserSerializer, CategorySerializer, ShopSerializer, ProductInfoSerializer, \
     OrderItemSerializer, OrderSerializer, ContactSerializer
 from shop_inter.signals import new_user_registered, new_order, shop_notification
+from shop_inter.tasks import new_order_func, new_order_shop
 
 
 class PartnerUpdate(APIView):
@@ -492,13 +493,16 @@ class OrderView(APIView):
                     return JsonResponse({'Status': False, 'Errors': 'Неправильно указаны аргументы'})
                 else:
                     if is_updated:
-                        new_order.send(sender=self.__class__, user_id=request.user.id)
+                        # new_order.send(sender=self.__class__, user_id=request.user.id)
+                        user_id = request.user.id
+                        new_order_func(user_id)
                         thisorder = Order.objects.get(user_id=request.user.id, id=request.data['id'])
                         thisitems = thisorder.orderitems.all()
                         user_list = [item.shop.user for item in thisitems]
                         id_list = set([user.id for user in user_list])
                         for id in id_list:
-                            shop_notification.send(sender=self.__class__, user_id=id, id=request.data['id'])
+                            # shop_notification.send(sender=self.__class__, user_id=id, id=request.data['id'])
+                            new_order_shop(id,request.data['id'])
                         return JsonResponse({'Status': True})
 
         return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
