@@ -7,3 +7,4 @@ django-rest-passwordreset
 pyYaml
 requests
 django-environ
+celery
