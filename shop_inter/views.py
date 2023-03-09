@@ -3,10 +3,12 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.db import IntegrityError
 from django.db.models import Q, Sum, F, DecimalField
+from django.shortcuts import get_object_or_404
 from django.shortcuts import render
 from rest_framework.authtoken.models import Token
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 from json import loads as load_json
 from json import dumps
 from django.core.validators import URLValidator
@@ -18,9 +20,11 @@ from requests import get
 from shop_inter.models import Shop, Category, ProductInfo, Product, ProductParameter, Parameter, Order, \
     OrderItem, Contact, ConfirmEmailToken
 from shop_inter.serializers import UserSerializer, CategorySerializer, ShopSerializer, ProductInfoSerializer, \
-    OrderItemSerializer, OrderSerializer, ContactSerializer
+    OrderItemSerializer, OrderSerializer, ContactSerializer, ProductSerializer
 from shop_inter.signals import new_user_registered, new_order, shop_notification
 from shop_inter.tasks import new_order_func, new_order_shop
+from rest_framework import viewsets
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 class PartnerUpdate(APIView):
@@ -213,34 +217,49 @@ class ShopView(ListAPIView):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
 
-class ProductInfoView(APIView):
-    """
-    Класс для поиска товаров
-    """
-    def get(self, request, *args, **kwargs):
+# class ProductInfoView(APIView):
+#     """
+#     Класс для поиска товаров
+#     """
+#     def get(self, request, *args, **kwargs):
+#
+#         # query = Q(shop__state=True)
+#         shop_id = request.query_params.get('shop_id')
+#         category_id = request.query_params.get('category_id')
+#
+#         if shop_id:
+#             # query = query & Q(shop_id=shop_id)
+#             query = Q(shop_id=shop_id)
+#
+#         if category_id:
+#             # query = query & Q(product__category_id=category_id)
+#             query = Q(product__category_id=category_id)
+#
+#         # фильтруем и отбрасываем дуликаты
+#         queryset = ProductInfo.objects.filter(
+#             query).select_related(
+#             'shop', 'product__category').prefetch_related(
+#             'product_parameters__parameter').distinct()
+#
+#         serializer = ProductInfoSerializer(queryset, many=True)
+#
+#         return Response(serializer.data)
 
-        # query = Q(shop__state=True)
-        shop_id = request.query_params.get('shop_id')
-        category_id = request.query_params.get('category_id')
+class ProductView(viewsets.ViewSet):
+    permission_classes = [AllowAny]
+    query = Q(shop__state=True)
+    queryset = ProductInfo.objects.filter(query)
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['product__category', 'shop']
 
-        if shop_id:
-            # query = query & Q(shop_id=shop_id)
-            query = Q(shop_id=shop_id)
-
-        if category_id:
-            # query = query & Q(product__category_id=category_id)
-            query = Q(product__category_id=category_id)
-
-        # фильтруем и отбрасываем дуликаты
-        queryset = ProductInfo.objects.filter(
-            query).select_related(
-            'shop', 'product__category').prefetch_related(
-            'product_parameters__parameter').distinct()
-
-        serializer = ProductInfoSerializer(queryset, many=True)
-
+    def list(self, request):
+        serializer = ProductInfoSerializer(self.queryset, many=True)
         return Response(serializer.data)
 
+    def retrieve(self, request, pk=None):
+        item = get_object_or_404(self.queryset, pk=pk)
+        serializer = ProductInfoSerializer(item)
+        return Response(serializer.data)
 
 class BasketView(APIView):
     """

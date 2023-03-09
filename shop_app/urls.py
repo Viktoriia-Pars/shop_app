@@ -14,12 +14,15 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from django_rest_passwordreset.views import reset_password_request_token, reset_password_confirm
+from rest_framework import routers
 
 from shop_inter.views import PartnerUpdate, PartnerState, PartnerOrders, RegisterAccount, ConfirmAccount, \
-    AccountDetails, ContactView, LoginAccount, CategoryView, ShopView, ProductInfoView, BasketView, OrderView
+    AccountDetails, ContactView, LoginAccount, CategoryView, ShopView, ProductView, BasketView, OrderView
 
+router = routers.DefaultRouter()
+router.register(r'products', ProductView)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('partner/update', PartnerUpdate.as_view(), name='partner-update'),
@@ -34,7 +37,8 @@ urlpatterns = [
     path('user/password_reset/confirm', reset_password_confirm, name='password-reset-confirm'),
     path('categories', CategoryView.as_view(), name='categories'),
     path('shops', ShopView.as_view(), name='shops'),
-    path('products', ProductInfoView.as_view(), name='shops'),
+    # path('products', ProductInfoView.as_view(), name='shops'),
+    path('',include(router.urls)),
     path('basket', BasketView.as_view(), name='basket'),
     path('order', OrderView.as_view(), name='order'),
 ]

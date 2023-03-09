@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'shop_inter.apps.ShopInterConfig',
     'rest_framework.authtoken',
     'django_rest_passwordreset',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -156,7 +157,6 @@ REST_FRAMEWORK = {
         # 'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ),
-
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
