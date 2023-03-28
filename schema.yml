@@ -1,0 +1,835 @@
+openapi: 3.0.3
+info:
+  title: shop_app API
+  version: 1.0.0
+  description: backend for internet shop
+paths:
+  /basket:
+    get:
+      operationId: basket_retrieve
+      description: получение содержимого корзины
+      tags:
+      - basket
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderItem'
+          description: ''
+    post:
+      operationId: basket_create
+      description: редактировать содержимое корзины
+      tags:
+      - basket
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderItem'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OrderItem'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OrderItem'
+        required: true
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderItem'
+          description: ''
+    put:
+      operationId: basket_update
+      description: изменить количество для позиции в корзине
+      tags:
+      - basket
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderItem'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OrderItem'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OrderItem'
+        required: true
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderItem'
+          description: ''
+    delete:
+      operationId: удалить товары из корзины
+      description: Класс для работы с корзиной пользователя
+      tags:
+      - basket
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /categories:
+    get:
+      operationId: categories_list
+      description: Класс для просмотра категорий
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - categories
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCategoryList'
+          description: ''
+  /order:
+    get:
+      operationId: order_retrieve
+      description: получить заказы
+      tags:
+      - order
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: ''
+    post:
+      operationId: order_create
+      description: разместить заказ из корзины
+      tags:
+      - order
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Order'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Order'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Order'
+        required: true
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: ''
+  /partner/orders:
+    get:
+      operationId: partner_orders_retrieve
+      description: получиние заказов для данного магазина
+      tags:
+      - partner
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: ''
+  /partner/state:
+    get:
+      operationId: partner_state_retrieve
+      description: получить текущий статус
+      tags:
+      - partner
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shop'
+          description: ''
+    post:
+      operationId: partner_state_create
+      description: изменить текущий статус
+      tags:
+      - partner
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Shop'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Shop'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Shop'
+        required: true
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shop'
+          description: ''
+  /partner/update:
+    post:
+      operationId: partner_update_create
+      tags:
+      - partner
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /products/:
+    get:
+      operationId: products_list
+      parameters:
+      - in: query
+        name: product__category
+        schema:
+          type: integer
+      - in: query
+        name: shop
+        schema:
+          type: integer
+      tags:
+      - products
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductInfo'
+          description: ''
+  /products/{id}/:
+    get:
+      operationId: products_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Информация о продукте.
+        required: true
+      tags:
+      - products
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductInfo'
+          description: ''
+  /shops:
+    get:
+      operationId: shops_list
+      description: Класс для просмотра списка магазинов
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - shops
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedShopList'
+          description: ''
+  /user/contact:
+    get:
+      operationId: user_contact_retrieve
+      description: получить контакты
+      tags:
+      - user
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contact'
+          description: ''
+    post:
+      operationId: user_contact_create
+      description: добавить новый контакт
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Contact'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Contact'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Contact'
+        required: true
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contact'
+          description: ''
+    put:
+      operationId: user_contact_update
+      description: редактировать контакт
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Contact'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Contact'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Contact'
+        required: true
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contact'
+          description: ''
+    delete:
+      operationId: user_contact_destroy
+      description: удалить контакт
+      tags:
+      - user
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /user/details:
+    get:
+      operationId: user_details_retrieve
+      tags:
+      - user
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    post:
+      operationId: user_details_create
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /user/login:
+    post:
+      operationId: user_login_create
+      tags:
+      - user
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /user/password_reset:
+    post:
+      operationId: user_password_reset_create
+      description: |-
+        An Api View which provides a method to request a password reset token based on an e-mail address
+
+        Sends a signal reset_password_token_created when a reset token was created
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Email'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Email'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Email'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Email'
+          description: ''
+  /user/password_reset/confirm:
+    post:
+      operationId: user_password_reset_confirm_create
+      description: An Api View which provides a method to reset a password based on
+        a unique token
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordToken'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordToken'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordToken'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordToken'
+          description: ''
+  /user/register:
+    post:
+      operationId: user_register_create
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /user/register/confirm:
+    post:
+      operationId: user_register_confirm_create
+      tags:
+      - user
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+components:
+  schemas:
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: Категория
+          maxLength: 128
+      required:
+      - id
+      - name
+    Contact:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        city:
+          type: string
+          title: Город
+          maxLength: 50
+        street:
+          type: string
+          title: Улица
+          maxLength: 100
+        house:
+          type: string
+          title: Дом
+          maxLength: 15
+        structure:
+          type: string
+          title: Корпус
+          maxLength: 15
+        building:
+          type: string
+          title: Строение
+          maxLength: 15
+        apartment:
+          type: string
+          title: Квартира
+          maxLength: 15
+        user:
+          type: integer
+          writeOnly: true
+          title: Пользователь
+        phone:
+          type: string
+          title: Телефон
+          maxLength: 20
+      required:
+      - city
+      - id
+      - phone
+      - street
+    Email:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+      - email
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        orderitems:
+          type: array
+          items:
+            type: integer
+            title: Позиции заказа
+          readOnly: true
+          title: Позиции заказа
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          title: Статус заказа
+        dt:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Время создания
+        total_sum:
+          type: integer
+        contact:
+          allOf:
+          - $ref: '#/components/schemas/Contact'
+          readOnly: true
+      required:
+      - contact
+      - dt
+      - id
+      - orderitems
+      - total_sum
+    OrderItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        product:
+          type: integer
+          title: Продукт
+        shop:
+          type: integer
+          title: Магазин
+        quantity:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Количество
+      required:
+      - id
+      - quantity
+    PaginatedCategoryList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+    PaginatedShopList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Shop'
+    PasswordToken:
+      type: object
+      properties:
+        password:
+          type: string
+        token:
+          type: string
+      required:
+      - password
+      - token
+    Product:
+      type: object
+      properties:
+        name:
+          type: string
+          title: Название продукта
+          maxLength: 128
+        category:
+          type: string
+          readOnly: true
+      required:
+      - category
+      - name
+    ProductInfo:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        model:
+          type: string
+          nullable: true
+          title: Модель продукта
+          maxLength: 128
+        product:
+          allOf:
+          - $ref: '#/components/schemas/Product'
+          readOnly: true
+        shop:
+          type: integer
+          title: Магазин
+        quantity:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Количество
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          title: Цена
+        price_rrc:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          title: Рекомендованная цена
+        product_parameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductParameter'
+          readOnly: true
+      required:
+      - id
+      - price
+      - price_rrc
+      - product
+      - product_parameters
+      - quantity
+      - shop
+    ProductParameter:
+      type: object
+      properties:
+        parameter:
+          type: string
+          readOnly: true
+        value:
+          type: string
+          title: Характеристика
+          maxLength: 128
+      required:
+      - parameter
+      - value
+    Shop:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: Название магазина
+          maxLength: 256
+        state:
+          type: boolean
+          title: Статус получения заказов
+      required:
+      - id
+      - name
+    StatusEnum:
+      enum:
+      - basket
+      - new
+      - confirmed
+      - assembled
+      - sent
+      - delivered
+      - canceled
+      type: string
+      description: |-
+        * `basket` - Статус корзины
+        * `new` - Новый
+        * `confirmed` - Подтвержден
+        * `assembled` - Собран
+        * `sent` - Отправлен
+        * `delivered` - Доставлен
+        * `canceled` - Отменен
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        company:
+          type: string
+          title: Компания
+          maxLength: 40
+        position:
+          type: string
+          title: Должность
+          maxLength: 40
+        contacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Contact'
+          readOnly: true
+      required:
+      - contacts
+      - email
+      - id
+  securitySchemes:
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"
