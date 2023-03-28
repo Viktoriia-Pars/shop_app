@@ -2,19 +2,22 @@ from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.dispatch import receiver, Signal
 from django_rest_passwordreset.signals import reset_password_token_created
+from drf_spectacular.utils import extend_schema
 
 from .models import ConfirmEmailToken, User
 
-new_user_registered = Signal(
-    providing_args=['user_id'],
+
+
+new_user_registered = Signal("user_id"
+    # providing_args=['user_id'],
 )
 
-new_order = Signal(
-    providing_args=['user_id'],
+new_order = Signal("user_id"
+    # providing_args=['user_id'],
 )
 
-shop_notification = Signal(
-    providing_args=['id']
+shop_notification = Signal("id"
+    # providing_args=['id']
 )
 
 @receiver(reset_password_token_created)
@@ -103,4 +106,3 @@ def new_order_for_shop(user_id, id, **kwargs):
         [user.email]
     )
     msg.send()
-

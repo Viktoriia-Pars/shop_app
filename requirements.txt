@@ -8,3 +8,4 @@ pyYaml
 requests
 django-environ
 celery
+drf-spectacular
